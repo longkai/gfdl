@@ -12,8 +12,9 @@ Google 了一下解决办法，360做了一个镜像，但是看到知乎网友�
 ### 用法
 ```shell
 # gfdl src [dest]
+# `src`: google fonts css url; `desc`: optional, where to put the download css file and its fonts.
 
-# gfdl https://example.org/fonts.css path/to/fonts.css
+$ gfdl https://example.org/fonts.css path/to/fonts.css
 ```
 
 ### 获取

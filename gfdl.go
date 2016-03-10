@@ -51,6 +51,7 @@ func main() {
 			fmt.Println("fetch ", url)
 			defer wg.Done()
 			resp, err := http.Get(url)
+			check(err)
 
 			defer resp.Body.Close()
 			bytes, err = ioutil.ReadAll(resp.Body)
