@@ -16,6 +16,36 @@ var (
 	regex = regexp.MustCompile(`https?://.+\.\w+`)
 )
 
+func fetchBytes(src string) ([]byte, error) {
+	resp, err := http.Get(src)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
+
+func fetchCss(src string) (string, error) {
+	bytes, err := fetchBytes(src)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+func writeFile(src, dest string, mode os.FileMode) error {
+	fmt.Println("fetch ", src)
+	bytes, err := fetchBytes(src)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(dest, bytes, mode)
+}
+
+func shortName(s string) string {
+	return s[strings.LastIndex(s, "/")+1:]
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println(`Usage: gfdl src [dest]`)
@@ -27,16 +57,15 @@ func main() {
 		dest = os.Args[2]
 	}
 	dir := filepath.Dir(dest)
-	err := os.MkdirAll(dir, 0755)
-	check(err)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		log.Fatalf("MkdirAll fail, %v\n", err)
+	}
 
-	resp, err := http.Get(src)
-	check(err)
-	defer resp.Body.Close()
-	bytes, err := ioutil.ReadAll(resp.Body)
-	check(err)
+	css, err := fetchCss(src)
+	if err != nil {
+		log.Fatalf("fetch css fail, %v\n", err)
+	}
 
-	css := string(bytes[:])
 	urls := regex.FindAllString(css, -1)
 	if urls == nil {
 		fmt.Println("No fonts found!")
@@ -48,17 +77,11 @@ func main() {
 	for i := range urls {
 		wg.Add(1)
 		go func(url string) {
-			fmt.Println("fetch ", url)
 			defer wg.Done()
-			resp, err := http.Get(url)
-			check(err)
 
-			defer resp.Body.Close()
-			bytes, err = ioutil.ReadAll(resp.Body)
-			check(err)
-
-			err = ioutil.WriteFile(filepath.Join(dir, shortName(url)), bytes, 0644)
-			check(err)
+			if err := writeFile(url, filepath.Join(dir, shortName(url)), 0644); err != nil {
+				log.Fatalf("write font fail, %v\n", err)
+			}
 
 			semas <- url
 		}(urls[i])
@@ -74,16 +97,8 @@ func main() {
 		css = strings.Replace(css, url, short, -1)
 	}
 
-	err = ioutil.WriteFile(dest, []byte(css), 0644)
-	check(err)
-}
-
-func shortName(s string) string {
-	return s[strings.LastIndex(s, "/")+1:]
-}
-
-func check(err error) {
-	if err != nil {
-		log.Fatal(err)
+	if err := ioutil.WriteFile(dest, []byte(css), 0644); err != nil {
+		log.Fatalf("fail to write dest css file, %v\n", err)
 	}
+	fmt.Println("done :)")
 }
