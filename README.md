@@ -17,9 +17,9 @@ Google 了一下解决办法，360做了一个镜像，但是看到知乎网友�
 $ gfdl https://example.org/fonts.css path/to/fonts.css
 ```
 
-### 获取
+### 安装
 ```shell
-# go get git@github.com:longkai/gfdl.git
+# go get github.com/longkai/gfdl
 ```
 
 ### License
