@@ -22,7 +22,10 @@ $ gfdl https://example.org/fonts.css path/to/fonts.css
 # go get github.com/longkai/gfdl
 ```
 
+或者[戳这里下载][2]
+
 ### License
 MIT
 
 [1]: https://xiaolongtongxue.com
+[2]: http://dl.xiaolongtongxue.com/gfdl/
