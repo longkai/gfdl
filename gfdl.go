@@ -22,7 +22,12 @@ func fetchBytes(src string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	// the byte maybe error content
+	b, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("StatusCode %d", resp.StatusCode)
+	}
+	return b, err
 }
 
 func fetchCss(src string) (string, error) {
@@ -37,7 +42,7 @@ func writeFile(src, dest string, mode os.FileMode) error {
 	fmt.Println("fetch ", src)
 	bytes, err := fetchBytes(src)
 	if err != nil {
-		return nil
+		return err
 	}
 	return ioutil.WriteFile(dest, bytes, mode)
 }
